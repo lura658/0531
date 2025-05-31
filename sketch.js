@@ -130,14 +130,12 @@ function isFist(hand) {
 function drawHandKeypoints(mirrored = false) {
   for (let i = 0; i < predictions.length; i++) {
     const prediction = predictions[i];
-    if (prediction.landmarks) {
-      for (let j = 0; j < prediction.landmarks.length; j++) {
-        let [x, y, z] = prediction.landmarks[j];
-        if (mirrored) x = width - x;
-        fill(0, 255, 0);
-        noStroke();
-        ellipse(x, y, 8, 8);
-      }
+    for (let j = 0; j < prediction.landmarks.length; j++) {
+      let [x, y, z] = prediction.landmarks[j];
+      if (mirrored) x = width - x;
+      fill(0, 255, 0);
+      noStroke();
+      ellipse(x, y, 8, 8);
     }
   }
 }
