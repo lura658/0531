@@ -20,19 +20,15 @@ function setup() {
 }
 
 function draw() {
-  // 反轉鏡頭畫面
-  push();
-  translate(width, 0);
-  scale(-1, 1);
   image(video, 0, 0, width, height);
-  drawHandKeypoints(true); // 反轉點
-  pop();
+  drawHandKeypoints();
 
-  // 互動說明（放在畫布右上角）
+  // 互動說明
   drawInstruction();
 
   if (gameState === "start") {
     drawStartScreen();
+    // checkStartButtonTouch(); // 移除這行
   }
 
   if (gameState === "question") {
@@ -126,25 +122,25 @@ function isFist(hand) {
   return fingers.every(f => f[3][1] > f[0][1] + 10);
 }
 
-// 顯示所有手勢點點，根據是否反轉
-function drawHandKeypoints(mirrored = false) {
+// 顯示所有手勢點點，取消食指紅圈
+function drawHandKeypoints() {
   for (let i = 0; i < predictions.length; i++) {
     const prediction = predictions[i];
     for (let j = 0; j < prediction.landmarks.length; j++) {
-      let [x, y, z] = prediction.landmarks[j];
-      if (mirrored) x = width - x;
+      const [x, y, z] = prediction.landmarks[j];
       fill(0, 255, 0);
       noStroke();
       ellipse(x, y, 8, 8);
     }
+    // 取消食指紅圈
   }
 }
 
-// 說明放在畫布右上角
+// 說明移到畫布右外側
 function drawInstruction() {
-  let infoX = width - 230;
+  let infoX = width + 20;
   fill(255, 240);
-  rect(infoX, 20, 210, 120, 16);
+  rect(infoX, 20, 220, 120, 16);
   fill(0);
   textSize(16);
   textAlign(LEFT, TOP);
@@ -157,3 +153,4 @@ function drawInstruction() {
     infoX + 10, 30
   );
 }
+s
