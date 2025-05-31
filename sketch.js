@@ -1,9 +1,10 @@
 let video;
 let handpose;
-let handPredictions = [];
+let predictions = [];
 let gameState = "start";
 let correctAnswer = "A";
 let startButton = { x: 220, y: 200, w: 200, h: 100 };
+let hasStarted = false;
 
 function setup() {
   let canvas = createCanvas(640, 480);
@@ -12,26 +13,22 @@ function setup() {
   video.size(width, height);
   video.hide();
 
-  handpose = ml5.handpose(video, handModelReady);
-  handpose.on('predict', results => {
-    handPredictions = results;
+  handpose = ml5.handpose(video, () => console.log("Handpose ready"));
+  handpose.on("predict", results => {
+    predictions = results;
   });
 }
 
-function handModelReady() {
-  console.log("Handpose ready");
-}
-
 function draw() {
-  // 只反轉鏡頭畫面，不反轉文字
+  // 反轉鏡頭畫面
   push();
   translate(width, 0);
   scale(-1, 1);
   image(video, 0, 0, width, height);
-  drawHandKeypoints(true);
+  drawHandKeypoints(true); // 反轉點
   pop();
 
-  // 互動說明
+  // 互動說明（放在畫布右上角）
   drawInstruction();
 
   if (gameState === "start") {
@@ -90,7 +87,7 @@ function drawQuestion() {
 }
 
 function checkAnswer() {
-  for (let hand of handPredictions) {
+  for (let hand of predictions) {
     if (isOpenHand(hand)) {
       fill(0, 255, 0);
       text("選擇 A", width / 2, 400);
@@ -129,21 +126,23 @@ function isFist(hand) {
   return fingers.every(f => f[3][1] > f[0][1] + 10);
 }
 
-// 顯示所有手勢點點
+// 顯示所有手勢點點，根據是否反轉
 function drawHandKeypoints(mirrored = false) {
-  for (let i = 0; i < handPredictions.length; i++) {
-    const hand = handPredictions[i];
-    for (let j = 0; j < hand.landmarks.length; j++) {
-      let [x, y, z] = hand.landmarks[j];
-      if (mirrored) x = width - x;
-      fill(0, 255, 0);
-      noStroke();
-      ellipse(x, y, 8, 8);
+  for (let i = 0; i < predictions.length; i++) {
+    const prediction = predictions[i];
+    if (prediction.landmarks) {
+      for (let j = 0; j < prediction.landmarks.length; j++) {
+        let [x, y, z] = prediction.landmarks[j];
+        if (mirrored) x = width - x;
+        fill(0, 255, 0);
+        noStroke();
+        ellipse(x, y, 8, 8);
+      }
     }
   }
 }
 
-// 互動說明放在畫布右上角
+// 說明放在畫布右上角
 function drawInstruction() {
   let infoX = width - 230;
   fill(255, 240);
