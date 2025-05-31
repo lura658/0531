@@ -1,10 +1,9 @@
 let video;
 let handpose;
-let predictions = [];
+let handPredictions = [];
 let gameState = "start";
 let correctAnswer = "A";
 let startButton = { x: 220, y: 200, w: 200, h: 100 };
-let hasStarted = false;
 
 function setup() {
   let canvas = createCanvas(640, 480);
@@ -13,22 +12,26 @@ function setup() {
   video.size(width, height);
   video.hide();
 
-  handpose = ml5.handpose(video, () => console.log("Handpose ready"));
-  handpose.on("predict", results => {
-    predictions = results;
+  handpose = ml5.handpose(video, handModelReady);
+  handpose.on('predict', results => {
+    handPredictions = results;
   });
 }
 
+function handModelReady() {
+  console.log("Handpose ready");
+}
+
 function draw() {
-  // 反轉鏡頭畫面
+  // 只反轉鏡頭畫面，不反轉文字
   push();
   translate(width, 0);
   scale(-1, 1);
   image(video, 0, 0, width, height);
-  drawHandKeypoints(true); // 反轉點
+  drawHandKeypoints(true);
   pop();
 
-  // 互動說明（放在畫布右上角）
+  // 互動說明
   drawInstruction();
 
   if (gameState === "start") {
@@ -87,7 +90,7 @@ function drawQuestion() {
 }
 
 function checkAnswer() {
-  for (let hand of predictions) {
+  for (let hand of handPredictions) {
     if (isOpenHand(hand)) {
       fill(0, 255, 0);
       text("選擇 A", width / 2, 400);
@@ -126,12 +129,12 @@ function isFist(hand) {
   return fingers.every(f => f[3][1] > f[0][1] + 10);
 }
 
-// 顯示所有手勢點點，根據是否反轉
+// 顯示所有手勢點點
 function drawHandKeypoints(mirrored = false) {
-  for (let i = 0; i < predictions.length; i++) {
-    const prediction = predictions[i];
-    for (let j = 0; j < prediction.landmarks.length; j++) {
-      let [x, y, z] = prediction.landmarks[j];
+  for (let i = 0; i < handPredictions.length; i++) {
+    const hand = handPredictions[i];
+    for (let j = 0; j < hand.landmarks.length; j++) {
+      let [x, y, z] = hand.landmarks[j];
       if (mirrored) x = width - x;
       fill(0, 255, 0);
       noStroke();
@@ -140,7 +143,7 @@ function drawHandKeypoints(mirrored = false) {
   }
 }
 
-// 說明放在畫布右上角
+// 互動說明放在畫布右上角
 function drawInstruction() {
   let infoX = width - 230;
   fill(255, 240);
